@@ -73,8 +73,6 @@ public:
     extractor &operator[](int index);
 
     /// @brief This method is used to parse the json string and return the values.
-    /// Created LazyTypedValues should be destroyed after use (objects, lists and strings are
-    /// allocated on the heap) or put into `json::lazy::data` class (which will destroy the contents).
     /// @param reset_cache If true, the cache start position will be reset to the start of the json string.
     /// See `reset_cache()` and `cache()` methods.
     /// @return Parsing result.

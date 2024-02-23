@@ -125,7 +125,7 @@ BEGIN_LAZY_JSON_NAMESPACE
             }
             
             if(deep){
-                auto parsed = lazy_parse(_tokenizer->getPos(), true);
+                auto parsed = lazy_parse(_tokenizer->getPos(), true, _tokenizer);
                 object->add(key, parsed.values, parsed.type);
                 continue;
             } 
@@ -208,7 +208,7 @@ BEGIN_LAZY_JSON_NAMESPACE
             }
 
             if(deep){
-                auto parsed = lazy_parse(_tokenizer->getPos(), true);
+                auto parsed = lazy_parse(_tokenizer->getPos(), true, _tokenizer);
                 list->add(index, parsed.values, parsed.type);
                 continue;
             } 
@@ -260,11 +260,11 @@ BEGIN_LAZY_JSON_NAMESPACE
         switch (token.type)
         {
         case TOKEN_TYPE::CURLY_OPEN:
-            result.values.object = object_parse(tokenizer.getPos(), deep, _tokenizer);
+            result.values.object = object_parse(_tokenizer->getPos(), deep, _tokenizer);
             result.type = LazyType::OBJECT;
             break;
         case TOKEN_TYPE::ARRAY_OPEN:
-            result.values.list = list_parse(tokenizer.getPos(), deep, _tokenizer);
+            result.values.list = list_parse(_tokenizer->getPos(), deep, _tokenizer);
             result.type = LazyType::LIST;
             break;
         case TOKEN_TYPE::STRING:

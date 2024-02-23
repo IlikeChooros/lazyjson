@@ -1,7 +1,4 @@
 #include "Tokenizer.h"
-
-
-extern lazyjson::Tokenizer tokenizer = lazyjson::Tokenizer("");
  
 BEGIN_LAZY_JSON_NAMESPACE
 

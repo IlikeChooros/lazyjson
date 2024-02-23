@@ -2,6 +2,7 @@
 
 #include "../stream/stream.h"
 #include <stdexcept>
+#include "../options.h"
 
 BEGIN_LAZY_JSON_NAMESPACE
 

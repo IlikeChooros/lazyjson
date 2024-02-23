@@ -56,7 +56,7 @@ To improve performance you can use this caching technique when extracting data f
 The effects drastically magnify when working with bigger structures.
 
 
-Here's an example of how to use the `reset_cache` parameter and the `extract` method:
+Here's an example of how to use the `cache()` method:
 
 ```cpp
 // Create an extractor object
@@ -77,7 +77,7 @@ std::string = ex["key3b"].extract().asString();
 
 ```
 
-The above example is faster than this:
+The above example is faster than:
 
 ```cpp
 // Create an extractor object

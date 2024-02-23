@@ -26,31 +26,7 @@ public:
     float asFloat();
     bool asBool();
     std::string asString();
-
-};
-
-/// @brief A wrapper for the LazyTypedValues struct, deletes the allocated memory when the object is destroyed
-class data
-{
-    
-public:
-    data() = default;
-    data(LazyTypedValues init);
-    data(LazyValues init, LazyType type);
-    ~data();
-
-    data& init(LazyTypedValues init);
-
-    LazyType type();
-    const LazyValues& values();
-
-    LazyObject& object();
-    std::string string();
-    LazyList& list();
-    float number();
-    bool boolean();
-
-    LazyTypedValues value;
+    bool asNull();
 };
 
 END_LAZY_JSON_NAMESPACE

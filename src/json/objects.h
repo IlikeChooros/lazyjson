@@ -7,8 +7,6 @@
 
 #include <list>
 
-extern lazyjson::Tokenizer tokenizer;
-
 BEGIN_LAZY_JSON_NAMESPACE
 
 class LazyObject;
@@ -64,9 +62,9 @@ class LazyLike
 public:
     virtual std::string json();
     virtual ~LazyLike() = default;
-    LazyLike(Tokenizer *t = &::tokenizer): 
+    LazyLike(Tokenizer *t = nullptr): 
         _start(0), _end(0), _tokenizer(t) {}
-    LazyLike(int start, int end, Tokenizer *t = &::tokenizer) {
+    LazyLike(int start, int end, Tokenizer *t) {
         push(start, end);
         _tokenizer = t;
     }
@@ -83,8 +81,8 @@ public:
 class LazyObject: public LazyLike
 {
 public:
-    LazyObject(int start, int end, Tokenizer *t = &::tokenizer) : LazyLike(start, end, t) {};
-    LazyObject(Tokenizer *t = &::tokenizer);
+    LazyObject(int start, int end, Tokenizer *t) : LazyLike(start, end, t) {};
+    LazyObject(Tokenizer *t);
     LazyObject(const LazyObject& other);
     ~LazyObject();
 
@@ -111,8 +109,8 @@ public:
 class LazyList : public LazyLike
 {
 public:
-    LazyList(int start, int end, Tokenizer *t = &::tokenizer) : LazyLike(start, end, t) {};
-    LazyList(Tokenizer *t = &::tokenizer);
+    LazyList(int start, int end, Tokenizer *t) : LazyLike(start, end, t) {};
+    LazyList(Tokenizer *t);
     LazyList(const LazyList& other);
     ~LazyList();
 
@@ -140,8 +138,8 @@ public:
 class LazyString : public LazyLike
 {
 public:
-    LazyString(int start, int end, Tokenizer *t = &::tokenizer) : LazyLike(start, end, t) {};
-    LazyString(Tokenizer *t = &::tokenizer): LazyLike(t) {};
+    LazyString(int start, int end, Tokenizer *t) : LazyLike(start, end, t) {};
+    LazyString(Tokenizer *t): LazyLike(t) {};
     LazyString(const LazyString& other);
     LazyString& operator=(const LazyString& other);
 
@@ -152,30 +150,30 @@ public:
 /// so it doesn't parse the whole string at once. Objects and lists 
 /// are also parsed lazily, their values are not parsed (skipped).
 /// @return parsed json object
-LazyTypedValues lazy_parse(size_t pos = 0, bool deep = false, Tokenizer *_tokenizer = &::tokenizer);
+LazyTypedValues lazy_parse(size_t pos, bool deep, Tokenizer *_tokenizer);
 
 /// @brief Parses json object from the global Tokenizer. Only keys are evalueated,
 /// values are skipped.
 /// @param pos position in the json string
 /// @param deep if true, values are also parsed
-LazyObject *object_parse(size_t pos = 0, bool deep = false, Tokenizer *_tokenizer = &::tokenizer);
+LazyObject *object_parse(size_t pos, bool deep, Tokenizer *_tokenizer);
 
 /// @brief Parses json list from the global Tokenizer. Only indexes are evalueated,
 /// values are skipped.
 /// @param pos position in the json string
 /// @param deep if true, values are also parsed
-LazyList *list_parse(size_t pos = 0, bool deep = false, Tokenizer *_tokenizer = &::tokenizer);
+LazyList *list_parse(size_t pos, bool deep, Tokenizer *_tokenizer);
 
 /// @brief Parses json string from the global Tokenizer. Onyl the parsing position
 /// is stored.
 /// @param pos 
 /// @return LazyString*
-LazyString *string_parse(size_t pos = 0, Tokenizer *_tokenizer = &::tokenizer);
+LazyString *string_parse(size_t pos, Tokenizer *_tokenizer);
 
 std::string verboseLazyType(LazyType type);
 
 void fast_forward(size_t pos, TOKEN_TYPE begin,
-                  TOKEN_TYPE end, Tokenizer *_tokenizer = &::tokenizer);
+                  TOKEN_TYPE end, Tokenizer *_tokenizer);
 
 void deepCopyLazyValue(LazyValues& value, LazyType& type, LazyValues& dest);
 

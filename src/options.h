@@ -7,3 +7,8 @@
 // - when lazy objects are being accessed
 #define DEBUG_LAZY_JSON false
 
+
+#if DEBUG_LAZY_JSON
+#include <Arduino.h>
+#endif
+
