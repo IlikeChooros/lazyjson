@@ -1,7 +1,6 @@
 #pragma once
 
 #include "TestCase.h"
-// #include "../lazyjson/lazyjson.h"
 #include <lazyjson.h>
 
 #include <vector>
@@ -84,7 +83,7 @@ namespace tests
             setMemoryWatchpoint();
             extractor extractor("\"mystring\"");
             assertLazyType(extractor.extract().raw(), LazyType::STRING);
-            assertEqual<std::string>(extractor.extract().asString(), "mystring");
+            assertEqual<String>(extractor.extract().asString(), "mystring");
             setMemoryWatchpoint();
         }
     };
@@ -99,7 +98,7 @@ namespace tests
 
             assertLazyType(extractor["foo"].extract().raw(), LazyType::LIST);
             assertLazyType(extractor["key"].extract().raw(), LazyType::STRING);
-            assertEqual<std::string>(extractor["key"].extract().asString(), "string");
+            assertEqual<String>(extractor["key"].extract().asString(), "string");
 
             setMemoryWatchpoint();
         }
