@@ -43,52 +43,43 @@ LazyTypedValues& wrapper::raw(){
 }
 
 LazyObject& wrapper::object(){
-    if (_value.type != LazyType::OBJECT){
-        throw invalid_type(LazyType::OBJECT, _value.type);
-    }
+    _assert_type(LazyType::OBJECT);
     return *(_value.values.object);
 }
 
 LazyList& wrapper::list(){
-    if(_value.type != LazyType::LIST){
-        throw invalid_type(LazyType::LIST, _value.type);
-    }
+    _assert_type(LazyType::LIST);
     return *(_value.values.list);
 }
 
 int wrapper::asInt(){
-    if(_value.type != LazyType::NUMBER){
-        throw invalid_type(LazyType::NUMBER, _value.type);
-    }
+    _assert_type(LazyType::NUMBER);
     return static_cast<int>(_value.values.number);
 }
 
 float wrapper::asFloat(){
-    if(_value.type != LazyType::NUMBER){
-        throw invalid_type(LazyType::NUMBER, _value.type);
-    }
+    _assert_type(LazyType::NUMBER);
     return _value.values.number;
 }
 
 bool wrapper::asBool(){
-    if(_value.type != LazyType::BOOL){
-        throw invalid_type(LazyType::BOOL, _value.type);
-    }
+    _assert_type(LazyType::BOOL);
     return _value.values.boolean;
 }
 
-bool wrapper::asNull(){
-    if(_value.type != LazyType::NULL_TYPE){
-        throw invalid_type(LazyType::NULL_TYPE, _value.type);
-    }
-    return true;
+bool wrapper::isNull(){
+    return _value.type == LazyType::NULL_TYPE;
 }
 
 std::string wrapper::asString(){
-    if(_value.type != LazyType::STRING){
-        throw invalid_type(LazyType::STRING, _value.type);
-    }
+    _assert_type(LazyType::STRING);
     return _value.values.string->str();
+}
+
+void wrapper::_assert_type(LazyType type){
+    if(_value.type != type){
+        throw invalid_type(type, _value.type);
+    }
 }
 
 END_LAZY_JSON_NAMESPACE

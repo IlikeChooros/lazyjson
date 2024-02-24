@@ -92,9 +92,11 @@ public:
     void add(const std::string& key, LazyValues value, LazyType type);
 
     /// @brief Searches for the value at the given key and lazily parses it.
+    /// @deprecated Use `extractor::filter(const std::string& key)` instead.
     LazyTypedValues operator[](const std::string& key);
 
     /// @brief Searches for the value at the given key and lazily parses it.
+    /// @deprecated Use `extractor::filter(const std::string& key)` instead.
     LazyTypedValues get(const std::string& key, bool cache = false);
 
     /// @brief Deep copy of the `other` object.
@@ -106,6 +108,7 @@ public:
 /// @brief LazyList is a lazy representation of a json list. When an index is
 /// accessed, the value is parsed and stored in the list. Keeps a list of
 /// indexes and their parsing positions.
+
 class LazyList : public LazyLike
 {
 public:
@@ -121,9 +124,11 @@ public:
 
     /// @brief Searches for the value at the given index and lazily parses it.
     /// @return Parsed value at the given index.
+    /// @deprecated Use `extractor::filter(int index)` instead.
     LazyTypedValues operator[](const int& index);
 
     /// @brief Searches for the value at the given index and lazily parses it.
+    /// @deprecated Use `extractor::filter(int index)` instead.
     LazyTypedValues get(const int& index, bool cache = false);
 
     /// @brief Deep copy of the `other` list.

@@ -4,7 +4,7 @@
 BEGIN_LAZY_JSON_NAMESPACE
 
 // ==============================
-// stream implementation
+// File stream.cpp
 
 void stream::set(char *data)
 {
@@ -99,7 +99,7 @@ bool stream::good()
 }
 
 // ==============================
-// Tokenizer implementation
+// File: Tokenizer.cpp
 
 std::string verboseTokenType(TOKEN_TYPE type)
 {
@@ -334,8 +334,10 @@ Token Tokenizer::peekToken()
     return token;
 }
 
+
+
 // ==============================
-// LazyObjects implementation
+// File: objects.cpp
 
 
 // This function is used to skip the tokens that are not needed
@@ -901,7 +903,8 @@ std::string LazyString::str(){
 
 
 // ==============================
-// Wrapper
+// File: wrapper.cpp
+
 
 wrapper::wrapper(LazyTypedValues value) {
     this->_value = value;
@@ -943,57 +946,48 @@ LazyTypedValues& wrapper::raw(){
 }
 
 LazyObject& wrapper::object(){
-    if (_value.type != LazyType::OBJECT){
-        throw invalid_type(LazyType::OBJECT, _value.type);
-    }
+    _assert_type(LazyType::OBJECT);
     return *(_value.values.object);
 }
 
 LazyList& wrapper::list(){
-    if(_value.type != LazyType::LIST){
-        throw invalid_type(LazyType::LIST, _value.type);
-    }
+    _assert_type(LazyType::LIST);
     return *(_value.values.list);
 }
 
 int wrapper::asInt(){
-    if(_value.type != LazyType::NUMBER){
-        throw invalid_type(LazyType::NUMBER, _value.type);
-    }
+    _assert_type(LazyType::NUMBER);
     return static_cast<int>(_value.values.number);
 }
 
 float wrapper::asFloat(){
-    if(_value.type != LazyType::NUMBER){
-        throw invalid_type(LazyType::NUMBER, _value.type);
-    }
+    _assert_type(LazyType::NUMBER);
     return _value.values.number;
 }
 
 bool wrapper::asBool(){
-    if(_value.type != LazyType::BOOL){
-        throw invalid_type(LazyType::BOOL, _value.type);
-    }
+    _assert_type(LazyType::BOOL);
     return _value.values.boolean;
 }
 
-bool wrapper::asNull(){
-    if(_value.type != LazyType::NULL_TYPE){
-        throw invalid_type(LazyType::NULL_TYPE, _value.type);
-    }
-    return true;
+bool wrapper::isNull(){
+    return _value.type == LazyType::NULL_TYPE;
 }
 
 std::string wrapper::asString(){
-    if(_value.type != LazyType::STRING){
-        throw invalid_type(LazyType::STRING, _value.type);
-    }
+    _assert_type(LazyType::STRING);
     return _value.values.string->str();
+}
+
+void wrapper::_assert_type(LazyType type){
+    if(_value.type != type){
+        throw invalid_type(type, _value.type);
+    }
 }
 
 
 // ==============================
-// Errors
+// File: errors.cpp
 
 std::string lazyTypeError(const LazyTypedValues& node, LazyType type){
     return "expected " + verboseLazyType(type) + " but got " + verboseLazyType(node.type);
@@ -1014,8 +1008,7 @@ invalid_type::invalid_type(const LazyType& expected, LazyType type)
 
 
 // ==============================
-// Extractor
-
+// File: extractor.cpp
 
 
 extractor::extractor(const char *json)
@@ -1071,11 +1064,13 @@ extractor &extractor::set(const char *json)
     _start = 0;
     _end = -1;
     _cache_start = 0;
+    _is_null = false;
     return *this;
 }
 
 void extractor::_set_cache()
 {
+    _is_null = false;
     _start = 0;
     _end = -1;
     _cache_start = 0;
@@ -1087,11 +1082,9 @@ const std::string &extractor::json()
     return _json;
 }
 
-void extractor::_validate(const LazyType &expected)
+LazyType extractor::_instance_type()
 {
     Token token = _tokenizer.peekToken();
-
-    bool invalid = false;
     LazyType valueType;
 
     switch (token.type)
@@ -1115,10 +1108,15 @@ void extractor::_validate(const LazyType &expected)
         valueType = LazyType::NULL_TYPE;
         break;
     default:
-        throw std::runtime_error("Unknown type");
+        throw std::runtime_error("extractor::_instance_type(): Unknown type / invalid json");
         break;
     }
+    return valueType;
+}
 
+void extractor::_validate(const LazyType &expected)
+{
+    LazyType valueType = _instance_type();
     if (expected != valueType){
         throw invalid_type(expected, valueType);
     }
@@ -1126,16 +1124,28 @@ void extractor::_validate(const LazyType &expected)
 
 wrapper extractor::extract()
 {
-    wrapper w(lazy_parse(_cache_start, false, &_tokenizer));
+    LazyTypedValues value;
+    if (_is_null){
+        value.type = LazyType::NULL_TYPE;
+    } else{
+        value = lazy_parse(_cache_start, false, &_tokenizer);
+    }
+    // reset the null flag
+    _is_null = false;
+    wrapper w(value);
     _reset_cache();
     // reset the tokenizer to the start of the value
     _tokenizer.setPos(_cache_start);
-
     return w;
 }
 
 extractor &extractor::filter(const std::string &find)
 {
+    // if the value was not found or has null type, no need to parse
+    if (_is_null || _instance_type() == LazyType::NULL_TYPE){
+        return *this;
+    }
+
     _tokenizer.setPos(_cache_start);
     _validate(LazyType::OBJECT);
     // curly open token
@@ -1181,7 +1191,6 @@ extractor &extractor::filter(const std::string &find)
         if (find == key){
             // store the position of the value, prepare for the next parsing
             _cache_start = static_cast<int>(_tokenizer.getPos());
-
 #if DEBUG_LAZY_JSON
     Serial.printf("Extractor: Found %s at %i\n", find.c_str(), _cache_start);
 #endif
@@ -1205,10 +1214,19 @@ extractor &extractor::filter(const std::string &find)
         }
     }
 
+    // if the key is not found, set the value as null
+    _is_null = true;
+
     return *this;
 }
 
-extractor &extractor::filter(int index){
+extractor &extractor::filter(int index)
+{
+    // if the value was not found or has null type, no need to parse
+    if (_is_null || _instance_type() == LazyType::NULL_TYPE){
+        return *this;
+    }
+
     _tokenizer.setPos(_cache_start);
     _validate(LazyType::LIST);
     // array open token
@@ -1253,6 +1271,9 @@ extractor &extractor::filter(int index){
         }
         i++;
     }
+
+    // if the index is not found, set the value as null
+    _is_null = true;
 
     return *this;
 }

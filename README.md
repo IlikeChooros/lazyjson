@@ -42,7 +42,7 @@ std::string value = ex["key"]["nested_key"].extract().asString();
 ```
 
 
-### Caching
+## Caching
 
 The `extractor` class allows caching current value (as a json string).
 To improve performance you can use this caching technique when extracting data from the same object or list.
@@ -84,6 +84,54 @@ std::string = ex["key"]["key2"]["key3b"].extract().asString();
 
 
 ```
+
+## Error Handling
+
+The Lazy JSON Extraction Library is designed with robust error handling to ensure smooth operation even when dealing with malformed or invalid JSON data. 
+
+### Usage
+
+The library uses standard C++ exceptions, specifically `std::runtime_error`, to handle errors. This exception is thrown when an error occurs during the extraction process. 
+
+```cpp
+lazyjson::extractor ex("{\"key\": \"hello\", \"foo\": null}");
+
+// Non-existing keys/indexes are supported, but only if the type is correct
+// (non existing key - object, non existing index - list)
+// ex[0].extract() will throw an exception
+ex["abc"][0]["key"].extract().isNull() // true
+// supports null propagation
+ex["foo"]["abc"][0].extract().isNull() // true
+try {
+    // Potentially error-prone code goes here
+    auto value = ex["key"].extract().as<int>(); // string cannot be converted to int
+    auto value2 = ex[0].extract().as<bool>(); // this is an object, exception will be thrown
+}
+catch (const std::runtime_error& e) {
+    // Handle the error
+
+    auto data = ex["key"].extract();
+    if (data.isNull()){
+        // handle null
+        // ...
+    }
+    if (data.type() == lazyjson::LazyType::STRING){
+        // handle string
+        // ...
+    } 
+}
+```
+
+In the above example, if a non-existing key or index is accessed on mismatching type, or if a value cannot be converted to the expected type, a `std::runtime_error` is thrown. The exception can be caught and handled in a catch block.
+
+### Common Errors
+
+Here are some common errors that can occur during the extraction process:
+
+- **Type Mismatch**: This error occurs when you try to extract a value as a type that does not match the actual type in the JSON data. For example, trying to extract a string value as an integer or trying to access an object as an array would result in a type mismatch error.
+- **Invalid Access**: This error occurs when you try to access a non-existing key or index. The library supports this operation, but only if the type is correct. For example, accessing a non-existing key in an object or a non-existing index in a list is allowed, but trying to access an index in an object or a key in a list would result in an invalid access error.
+
+Each of these errors results in a `std::runtime_error` being thrown with a message that describes the error.
 
 ## Contributing
 

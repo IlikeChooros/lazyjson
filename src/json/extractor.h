@@ -2,7 +2,7 @@
 
 /*
 
-The whole idea of extracor is to filter the json string and store the positions of
+The whole idea of extractor is to filter the json string and store the positions of
 the elements that are going to be parsed. This way, the parsing is done only when
 the value is accessed. This is useful when the json string is big and only a few
 elements are going to be used.
@@ -27,7 +27,9 @@ class extractor
     int _end;
     int _cache_start;
     Tokenizer _tokenizer;
+    bool _is_null;
 
+    LazyType _instance_type();
     void _validate(const LazyType &expected);
     void _reset_cache();
     void _set_cache();
@@ -130,7 +132,7 @@ public:
     "\"key2\": \"value\"}"
     );
 
-    e["key"]["subkey"][1].extract().asFloat(); // 1.5
+    e["key"]["subkey"][1].extract().as<double>(); // 1.5
     e["key"]["subkey2"].extract().asInt(); // 2
     e["key2"].extract().asString(); // "value"
     ```
