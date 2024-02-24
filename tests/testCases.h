@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TestCase.h"
-
+// #include "../lazyjson/lazyjson.h"
 #include <lazyjson.h>
 
 #include <vector>
@@ -113,6 +113,7 @@ namespace tests
             setMemoryWatchpoint();
             extractor extractor("{\"foo\": -0.54, \"pi\": 3.14159265, \"one\": 1}");
 
+            // numbers aren't allocated on heap so this is valid use
             assertLazyType(extractor["foo"].extract().raw(), LazyType::NUMBER);
             assertLazyType(extractor["pi"].extract().raw(), LazyType::NUMBER);
             assertLazyType(extractor["one"].extract().raw(), LazyType::NUMBER);
@@ -186,9 +187,10 @@ namespace tests
 
             extractor["object"].cache();
 
-            assertEqual(extractor["list"][0].extract().asInt(), 1, " %i != %i \n");
+            assertEqual(extractor["list"][0].extract().as<int>(), 1, " %i != %i \n");
             assertEqual(extractor["bool"].extract().asBool(), true, " %i != %i \n");
-            assertEqual(extractor["null"].extract().asNull(), true, " %i != %i \n");
+            // assertEqual(extractor["null"].extract().isNull(), true, " %i != %i \n");
+            assertEqual(extractor["non_existing"].extract().isNull(), true, " %i != %i \n");
 
             extractor["list"].cache();
 
@@ -268,7 +270,86 @@ namespace tests
             setMemoryWatchpoint();
         }
     };
-/*
+
+
+    class TestNullPropagation : public JsonTestCase
+    {
+    public:
+        TestNullPropagation() : JsonTestCase("TestNullPropagation") {}
+
+        void test()
+        {
+            setMemoryWatchpoint();
+            using namespace lazyjson;
+
+            extractor ex("{\"foo\": null, \"bar\": {\"foo\": null}, \"list\": [null, {\"foo\": null}]}");
+
+            assertLazyType(ex["foo"].extract().raw(), LazyType::NULL_TYPE);
+            assertLazyType(ex["foo"]["foo"].extract().raw(), LazyType::NULL_TYPE);
+            assertLazyType(ex["foo"]["bar"]["foo"].extract().raw(), LazyType::NULL_TYPE);
+            assertLazyType(ex["foo"]["list"][7]["foo"][10].extract().raw(), LazyType::NULL_TYPE);
+
+            setMemoryWatchpoint();
+        }
+    };
+
+    class TestThrowExeptionOnWrongType : public JsonTestCase
+    {
+    public:
+        TestThrowExeptionOnWrongType() : JsonTestCase("TestThrowExeptionOnWrongType") {}
+
+        void test()
+        {
+            setMemoryWatchpoint();
+            using namespace lazyjson;
+
+            extractor ex("{\"foo\": \"string\", \"bar\": {\"foo\": null}, \"list\": [null, {\"foo\": null}]}");
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["foo"].extract().as<int>(); });
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["bar"]["foo"].extract().asString(); });
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["list"][0].extract().as<double>(); });
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["list"][1]["foo"]["abc"].extract().asFloat(); });
+
+            setMemoryWatchpoint();
+        }
+    };
+
+    class TestThrowExeptionOnValueTypeMismatch : public JsonTestCase
+    {
+    public:
+        TestThrowExeptionOnValueTypeMismatch() : JsonTestCase("TestThrowExeptionOnValueTypeMismatch") {}
+
+        void test()
+        {
+            setMemoryWatchpoint();
+            using namespace lazyjson;
+
+            extractor ex("{\"foo\": \"string\", \"bar\": {\"foo\": null}, \"list\": [null, {\"foo\": null}]}");
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex[0].extract().as<int>(); });
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["bar"][0].extract().asString(); });
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["list"]["foo"].extract().as<double>(); });
+
+            assertThrow<std::runtime_error>([&]()
+                                            { ex["list"][1][12].extract().asFloat(); });
+
+            setMemoryWatchpoint();
+        }
+    };
+
+/*  
 
 
     // complex tests

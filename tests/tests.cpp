@@ -72,12 +72,10 @@ namespace tests
                 testBase(new LazyExtractorExampleTest()),
                 testBase(new LazyExtractorForecastApiData()),
                 testBase(new LazyExtractorComplexApiWeatherData()),
+                testBase(new TestNullPropagation()),
+                testBase(new TestThrowExeptionOnWrongType()),
+                testBase(new TestThrowExeptionOnValueTypeMismatch()),
             };
-
-            char* buff;
-            const char* s = buff;
-
-            
 
             int failed = 0;
             auto beforeMemory = ESP.getFreeHeap();
@@ -106,6 +104,14 @@ namespace tests
 
         auto afterMemory = ESP.getFreeHeap();
         Serial.printf("\n\nRoot memory diff: %u B\n", size_t(rootMemory - afterMemory));
+        if (rootMemory - afterMemory > 0)
+        {
+            Serial.println("Memory leak detected");
+        }
+        else
+        {
+            Serial.println("No memory leak detected");
+        }
     }
         
 }
