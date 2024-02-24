@@ -1020,7 +1020,7 @@ invalid_type::invalid_type(const LazyType& expected, LazyType type)
 
 extractor::extractor(const char *json)
 {
-    static_cast<void>(use(json));
+    static_cast<void>(set(json));
 }
 
 extractor::~extractor() {}
@@ -1028,22 +1028,21 @@ extractor::~extractor() {}
 void extractor::reset()
 {
     _start = 0;
-    _end = -1;
+    _reset_cache();
+    const char *data = _data;
+    static_cast<void>(set(data));
 }
 
-extractor &extractor::reset_cache()
+void extractor::_reset_cache()
 {
     _cache_start = _start;
     _end = -1;
-    return *this;
 }
 
 void extractor::cache()
 {
-    _start = _cache_start;
-
     // get the end of the value
-    _tokenizer.setPos(_start);
+    _tokenizer.setPos(_cache_start);
 
     Token token = _tokenizer.getToken();
 
@@ -1057,18 +1056,30 @@ void extractor::cache()
     }
     // else the values are parsed as a whole (strings, numbers, booleans, nulls)
     _end = (int)_tokenizer.getPos();
+    _json = _tokenizer.json(_cache_start, _end);
 
-    _tokenizer.setPos(_start);
-    _json = _tokenizer.json(_start, _end);
+#if DEBUG_LAZY_JSON
+    Serial.printf("Extractor: Caching %s\n", _json.c_str());
+#endif
+    _set_cache();
 }
 
-extractor &extractor::use(const char *json)
+extractor &extractor::set(const char *json)
 {
+    _data = const_cast<char *>(json);
     _tokenizer.setData(json);
     _start = 0;
     _end = -1;
     _cache_start = 0;
     return *this;
+}
+
+void extractor::_set_cache()
+{
+    _start = 0;
+    _end = -1;
+    _cache_start = 0;
+    _tokenizer.setData(_json.c_str());
 }
 
 const std::string &extractor::json()
@@ -1113,13 +1124,10 @@ void extractor::_validate(const LazyType &expected)
     }
 }
 
-wrapper extractor::extract(bool reset_cache)
+wrapper extractor::extract()
 {
     wrapper w(lazy_parse(_cache_start, false, &_tokenizer));
-    
-    if(reset_cache){
-        static_cast<void>(this->reset_cache());
-    }
+    _reset_cache();
     // reset the tokenizer to the start of the value
     _tokenizer.setPos(_cache_start);
 
@@ -1256,7 +1264,5 @@ extractor& extractor::operator[](const std::string& key){
 extractor& extractor::operator[](int index){
     return filter(index);
 }
-
-
 
 END_LAZY_JSON_NAMESPACE

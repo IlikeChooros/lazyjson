@@ -1,6 +1,6 @@
 # Lazy JSON Extraction Library
 
-This library provides a simple and efficient way to extract JSON data in C++. It's designed to be lightweight and easy to use, making it ideal for resource-constrained environments.
+This library provides a simple and efficient way to extract JSON data in C++. It's designed to be lightweight and easy to use, making it ideal for resource-constrained environments such as Arduino.
 
 ## Features
 
@@ -12,10 +12,10 @@ This library provides a simple and efficient way to extract JSON data in C++. It
 
 ### Include the Library
 
-Include the [`lazyjson.h`](command:_github.copilot.openRelativePath?%5B%22lazyjson.h%22%5D "lazyjson.h") file in your project.
+Include the `lazyjson.h` file in your project.
 
 ```cpp
-#include "lazyjson.h"
+#include <lazyjson.h>
 ```
 
 ### Create an Extractor
@@ -23,7 +23,7 @@ Include the [`lazyjson.h`](command:_github.copilot.openRelativePath?%5B%22lazyjs
 Create an `extractor` object with your JSON data.
 
 ```cpp
-extractor ex(json_data);
+extractor ex("{\"version\": [\"lazyjson\", 1.0], \"key\": true}");
 ```
 
 ### Extract Data
@@ -31,8 +31,8 @@ extractor ex(json_data);
 You can extract data using the `[]` operator. Use a string key to extract a value from an object, or an integer index to extract a value from an array.
 
 ```cpp
-std::string value = ex["key"].extract().asString();
-int value = ex[0].extract().asInt();
+std::string value = ex["key"].extract().asBool(); // true
+int value = ex["version"][1].extract().asInt(); // 1
 ```
 
 You can also chain `[]` operators to extract nested data.
@@ -41,39 +41,31 @@ You can also chain `[]` operators to extract nested data.
 std::string value = ex["key"]["nested_key"].extract().asString();
 ```
 
-### Reset the Extractor
-
-You can reset the extractor to its initial state using the `reset` method.
-
-```cpp
-ex.reset();
-```
 
 ### Caching
 
-The `extractor` class doesn't allow value caching, but it can cache an whole object or list (as a string).
+The `extractor` class allows caching current value (as a json string).
 To improve performance you can use this caching technique when extracting data from the same object or list.
-The effects drastically magnify when working with bigger structures.
+The effects drastically magnify while working with bigger structures.
 
 
 Here's an example of how to use the `cache()` method:
 
 ```cpp
 // Create an extractor object
-lazyjson::extractor ex("{\"key\": {\"key2\": {\"key3\": 123, \"key3a\": true, \"key3b\": \"hello\"}}}");
+lazyjson::extractor ex("{\"key\": {\"key2\": {\"key3\": 123, \"key3a\": true, \"key3b\": \"hello\"}}, \"other_key\": 1.5}");
 
-// cache the nested object at key2
+// cache the nested object at key2, using cached json as main
 ex["key"]["key2"].cache();
 
-// get the cached json
-std::string cached = ex.json();
-
-// load cached string, update the json
-ex.use(cached.c_str());
-
+// notice that you are within the cached object
 int number = ex["key3"].extract().asInt();
 bool boolean = ex["key3a"].extract().asBool();
 std::string = ex["key3b"].extract().asString();
+
+// reset to inital state
+ex.reset();
+float other = ex["other_key"].extract().asFloat(); // 1.5
 
 ```
 
@@ -83,8 +75,8 @@ The above example is faster than:
 // Create an extractor object
 lazyjson::extractor ex("{\"key\": {\"key2\": {\"key3\": 123, \"key3a\": true, \"key3b\": \"hello\"}}}");
 
-// this will couse iterating over the json string more times as opposed to caching example!
-// the cached example does exacly (1 + 1) + (1 + 2 + 3) = 8 key searchings
+// this will cause iterating over the same json string many times!
+// the cached example does exacly (1 + 1) + (1 + 2 + 3) = 8 key searches
 // this example: (1 + 1 + 1) + (1 + 1 + 2) + (1 + 1 + 3) = 12
 int number = ex["key"]["key2"]["key3"].extract().asInt();
 bool boolean = ex["key"]["key2"]["key3a"].extract().asBool();

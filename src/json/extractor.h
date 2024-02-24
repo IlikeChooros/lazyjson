@@ -21,6 +21,7 @@ BEGIN_LAZY_JSON_NAMESPACE
 /// when the value is accessed (either by [] operator or by calling `extract()`).
 class extractor
 {
+    char* _data;
     std::string _json;
     int _start;
     int _end;
@@ -28,30 +29,70 @@ class extractor
     Tokenizer _tokenizer;
 
     void _validate(const LazyType &expected);
+    void _reset_cache();
+    void _set_cache();
 public:
     extractor(const char *json);
     ~extractor();
 
     /// @brief Resets the start and end positions of the parsing.
+    /// Resets the json string to the initial state.
     void reset();
 
-    /// @brief Resets the cache start position.
-    extractor &reset_cache();
+    /// @brief Sets the initial json string.
+    extractor &set(const char *json);
 
-    /// @brief Sets the json string to be used for parsing.
-    extractor &use(const char *json);
+    /*
+    The `cache()` method is used to store the current parsing value.
+    This is useful when the value is going to be accessed multiple times,
+    since the extractor works similarly to a text filter, each time a value
+    is accessed, the parsing is done again. The negative effects, such as
+    slower parsing, can be avoided by caching the value. This way, the parsing
+    is done minimum times.
 
-    /// @brief Caches the current json string. This is basically a substring of the
-    /// json string, so you can use the cached string to parse the other values later.
-    /// Minimizing the number of times the json string is parsed. To get the cached json call
-    /// `json()`. To load the cached string, use the `use(const char* json)` method.
+    Overrides the previous cached value and sets the cached json string as the current json string.
+    Caching can be done on any value, including objects, lists, numbers, strings, etc.
+    
+
+    Example:
+
+    ```
+
+    auto e = extractor(
+    "{\"key\": "
+        "{"
+            "\"subkey\": [\"hello\", 1.5, true],"
+            "\"subkey2\": 2,"
+            "\"subkey3\": 3"
+        "},"
+    "\"key2\": \"value\"}"
+    );
+
+    e["key"].cache(); // cache the object at "key"
+
+    e["subkey"].extract().asInt(); // 1
+    e["subkey2"].extract().asInt(); // 2
+    e["subkey3"].extract().asInt(); // 3
+
+    e["subkey"].cache(); // cache the list at "subkey"
+
+    e[0].extract().asString(); // "hello"
+    e[1].extract().asFloat(); // 1.5
+    e[2].extract().asBool(); // true
+
+    e.reset(); // reset the parsing json string to initial state (the whole json object)
+
+    e["key2"].extract().asString(); // "value"
+    ```
+
+    */ 
     void cache();
 
-    /// @brief Returns the cached json string.
+    /// @brief Returns the `cached` json string.
     const std::string& json();
 
     /// @brief Filters the JSON string by a key, the result is not extracted (parsed), 
-    /// to get the value use the `extract()` method. If the key is not found, nothing happens,
+    /// to get the value use the `extract()` method. If the key is not found, nothing happens and
     /// calling `extract()` will return this json object (since this is the value that was filtered)
     /// @param key 
     /// @throw `json::lazy::invalid_type` if the value is not an object.
@@ -59,7 +100,7 @@ public:
     extractor &filter(const std::string &key);
 
     /// @brief Filters the JSON string by an index, the result is not extracted (parsed), 
-    /// to get the value use the `extract()` method. If the index is out of range, nothing happens,
+    /// to get the value use the `extract()` method. If the index is out of range, nothing happens and
     /// calling `extract()` will return this json list (since this is the value that was filtered)
     /// @param index
     /// @throw `json::lazy::invalid_type` if the value is not a list.
@@ -72,11 +113,30 @@ public:
     /// @brief Filters the JSON string by an index, same as `filter(int index)`
     extractor &operator[](int index);
 
-    /// @brief This method is used to parse the json string and return the values.
-    /// @param reset_cache If true, the cache start position will be reset to the start of the json string.
-    /// See `reset_cache()` and `cache()` methods.
-    /// @return Parsing result.
-    wrapper extract(bool reset_cache = true);
+    /*
+    Extract the current filtered value. The value is parsed and returned as a wrapper.
+    See also `cache()` method for caching the value and optimizing the parsing.
+
+    Example:
+
+    ```
+    auto e = extractor(
+    "{\"key\": "
+        "{"
+            "\"subkey\": [\"hello\", 1.5, true],"
+            "\"subkey2\": 2,"
+            "\"subkey3\": 3"
+        "},"
+    "\"key2\": \"value\"}"
+    );
+
+    e["key"]["subkey"][1].extract().asFloat(); // 1.5
+    e["key"]["subkey2"].extract().asInt(); // 2
+    e["key2"].extract().asString(); // "value"
+    ```
+    
+    */
+    wrapper extract();
 };
 
 
