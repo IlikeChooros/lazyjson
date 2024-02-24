@@ -78,6 +78,7 @@ std::string wrapper::asString(){
 
 void wrapper::_assert_type(LazyType type){
     if(_value.type != type){
+        this->~wrapper();
         throw invalid_type(type, _value.type);
     }
 }

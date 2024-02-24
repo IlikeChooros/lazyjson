@@ -299,18 +299,21 @@ BEGIN_LAZY_JSON_NAMESPACE
         #endif
             
             delete value.object;
+            value.object = nullptr;
             break;
         case LazyType::LIST:
         #if DEBUG_LAZY_JSON
             Serial.printf("Destroying lazy list at %p \n", value.list);
         #endif
             delete value.list;
+            value.list = nullptr;
             break;
         case LazyType::STRING:
         #if DEBUG_LAZY_JSON
             Serial.printf("Destroying lazy string at %p \n", value.string);
         #endif
             delete value.string;
+            value.string = nullptr;
             break;        
         default:
         #if DEBUG_LAZY_JSON

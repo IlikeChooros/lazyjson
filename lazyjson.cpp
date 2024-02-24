@@ -636,18 +636,21 @@ void destroyLazyValue(LazyValues& value, LazyType& type)
     #endif
         
         delete value.object;
+        value.object = nullptr;
         break;
     case LazyType::LIST:
     #if DEBUG_LAZY_JSON
         Serial.printf("Destroying lazy list at %p \n", value.list);
     #endif
         delete value.list;
+        value.list = nullptr;
         break;
     case LazyType::STRING:
     #if DEBUG_LAZY_JSON
         Serial.printf("Destroying lazy string at %p \n", value.string);
     #endif
         delete value.string;
+        value.string = nullptr;
         break;        
     default:
     #if DEBUG_LAZY_JSON
@@ -981,6 +984,7 @@ std::string wrapper::asString(){
 
 void wrapper::_assert_type(LazyType type){
     if(_value.type != type){
+        this->~wrapper();
         throw invalid_type(type, _value.type);
     }
 }
@@ -1154,7 +1158,7 @@ extractor &extractor::filter(const std::string &find)
     Token token;
 
 #if DEBUG_LAZY_JSON
-    Serial.printf("Extractor: Filtering %s, json = %s\n", find.c_str(), _tokenizer._stream.data());
+    // Serial.printf("Extractor: Filtering %s, json = %s\n", find.c_str(), _tokenizer._stream.data());
 #endif
 
     while (_tokenizer.hasTokens()){
@@ -1180,7 +1184,7 @@ extractor &extractor::filter(const std::string &find)
         auto key = token.value;
 
     #if DEBUG_LAZY_JSON
-        Serial.printf("Extractor: Parsing object key %s \n", key.c_str());
+        // Serial.printf("Extractor: Parsing object key %s \n", key.c_str());
     #endif
         // colon must be next
         if (_tokenizer.getToken().type != TOKEN_TYPE::COLON){
