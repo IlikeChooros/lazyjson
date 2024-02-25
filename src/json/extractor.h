@@ -78,9 +78,9 @@ public:
 
     e["subkey"].cache(); // cache the list at "subkey"
 
-    e[0].extract().asString(); // "hello"
-    e[1].extract().asFloat(); // 1.5
-    e[2].extract().asBool(); // true
+    e[0].extract().as<String>(); // "hello"
+    e[1].extract().as<float>(); // 1.5
+    e[2].extract().as<bool>(); // true
 
     e.reset(); // reset the parsing json string to initial state (the whole json object)
 
@@ -123,13 +123,13 @@ public:
 
     ```
     auto e = extractor(
-    "{\"key\": "
-        "{"
-            "\"subkey\": [\"hello\", 1.5, true],"
-            "\"subkey2\": 2,"
-            "\"subkey3\": 3"
-        "},"
-    "\"key2\": \"value\"}"
+        "{\"key\": "
+            "{"
+                "\"subkey\": [\"hello\", 1.5, true],"
+                "\"subkey2\": 2,"
+                "\"subkey3\": 3"
+            "},"
+        "\"key2\": \"value\"}"
     );
 
     e["key"]["subkey"][1].extract().as<double>(); // 1.5
@@ -139,6 +139,35 @@ public:
     
     */
     wrapper extract();
+
+    /*
+    Checks wheter the value was not found.
+
+    Example:
+
+    ```
+    
+    extractor ex(
+        "{\"key\": "
+            "{"
+                "\"subkey\": [\"hello\", 1.5, true],"
+                "\"subkey2\": 2,"
+                "\"subkey3\": 3"
+            "},"
+        "\"key2\": \"value\"}"
+    );
+
+    ex["random_key"].isNull(); // true
+    ex["key"].isNull(); // false
+    ex["key"]["subkey"][3].isNull(); // true
+    ex["key"]["subkey"][0].isNull(); // false
+    ex["key"]["subkey"][5]["hello"].isNull(); // true
+    ex["key2"].isNull(); // false
+
+    ```
+    
+    */
+    bool isNull();
 };
 
 

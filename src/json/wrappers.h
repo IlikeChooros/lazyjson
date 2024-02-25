@@ -4,6 +4,8 @@
 #include "objects.h"
 #include <type_traits>
 
+#include <Arduino.h>
+
 BEGIN_LAZY_JSON_NAMESPACE
 
 
@@ -27,17 +29,17 @@ public:
     LazyList& list();
 
     template<typename T>
-    T as();
+    inline T as();
 
     int asInt();
     float asFloat();
     bool asBool();
-    std::string asString();
+    String asString();
     bool isNull();
 };
 
 template<typename T>
-T wrapper::as()
+inline T wrapper::as()
 {
     static_assert(std::is_arithmetic<T>::value, "wrapper::as<T>() : Type T must be an arithmetic type (int, bool, float, etc.)");
     if (std::is_same<T, bool>::value)
@@ -49,6 +51,17 @@ T wrapper::as()
         _assert_type(LazyType::NUMBER);
         return static_cast<T>(_value.values.number);
     }
+}
+
+template<>
+inline String wrapper::as<String>(){
+    return asString();
+}
+
+template<>
+inline std::string wrapper::as<std::string>(){
+    _assert_type(LazyType::STRING);
+    return _value.values.string->str();
 }
 
 END_LAZY_JSON_NAMESPACE

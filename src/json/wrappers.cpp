@@ -71,9 +71,9 @@ bool wrapper::isNull(){
     return _value.type == LazyType::NULL_TYPE;
 }
 
-std::string wrapper::asString(){
+String wrapper::asString(){
     _assert_type(LazyType::STRING);
-    return _value.values.string->str();
+    return String(_value.values.string->str().c_str());
 }
 
 void wrapper::_assert_type(LazyType type){

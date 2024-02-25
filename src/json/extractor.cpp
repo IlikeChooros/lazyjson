@@ -27,6 +27,11 @@ void extractor::_reset_cache()
 
 void extractor::cache()
 {
+    // if the cached value was not found
+    if (_is_null){
+        return;
+    }
+
     // get the end of the value
     _tokenizer.setPos(_cache_start);
 
@@ -134,12 +139,12 @@ wrapper extractor::extract()
 
 extractor &extractor::filter(const std::string &find)
 {
+    _tokenizer.setPos(_cache_start);
     // if the value was not found or has null type, no need to parse
     if (_is_null || _instance_type() == LazyType::NULL_TYPE){
         return *this;
     }
 
-    _tokenizer.setPos(_cache_start);
     _validate(LazyType::OBJECT);
     // curly open token
     _tokenizer.getToken();
@@ -215,12 +220,12 @@ extractor &extractor::filter(const std::string &find)
 
 extractor &extractor::filter(int index)
 {
+    _tokenizer.setPos(_cache_start);
     // if the value was not found or has null type, no need to parse
     if (_is_null || _instance_type() == LazyType::NULL_TYPE){
         return *this;
     }
 
-    _tokenizer.setPos(_cache_start);
     _validate(LazyType::LIST);
     // array open token
     _tokenizer.getToken();
@@ -277,6 +282,12 @@ extractor& extractor::operator[](const std::string& key){
 
 extractor& extractor::operator[](int index){
     return filter(index);
+}
+
+bool extractor::isNull(){
+    _tokenizer.setPos(_cache_start);
+    _reset_cache();
+    return _is_null || _instance_type() == LazyType::NULL_TYPE;
 }
 
 END_LAZY_JSON_NAMESPACE
