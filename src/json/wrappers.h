@@ -28,13 +28,25 @@ public:
     LazyObject& object();
     LazyList& list();
 
+
+    ///@brief Cast parsed value to type T
+    ///@throws `lazyjson::invalid_type` if the value cannot be casted to type T
     template<typename T>
     inline T as();
 
+    /// @brief Cast parsed value to type int
     int asInt();
+
+    /// @brief  Cast parsed value to type float
     float asFloat();
+    
+    /// @brief  Cast parsed value to type bool
     bool asBool();
+
+    /// @brief  Cast parsed value to type String
     String asString();
+
+    /// @brief  Check if value is null or does not exist 
     bool isNull();
 };
 
@@ -42,12 +54,13 @@ template<typename T>
 inline T wrapper::as()
 {
     static_assert(std::is_arithmetic<T>::value, "wrapper::as<T>() : Type T must be an arithmetic type (int, bool, float, etc.)");
-    if (std::is_same<T, bool>::value)
-    {
+    if (std::is_same<T, bool>::value){
         return asBool();
     }
-    else if (std::is_arithmetic<T>::value)
-    {
+    else if (std::is_arithmetic<T>::value){
+        if (isNull()){
+            return 0;
+        }
         _assert_type(LazyType::NUMBER);
         return static_cast<T>(_value.values.number);
     }
@@ -60,8 +73,7 @@ inline String wrapper::as<String>(){
 
 template<>
 inline std::string wrapper::as<std::string>(){
-    _assert_type(LazyType::STRING);
-    return _value.values.string->str();
+    return std::string(asString().c_str());
 }
 
 END_LAZY_JSON_NAMESPACE

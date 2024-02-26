@@ -53,16 +53,17 @@ LazyList& wrapper::list(){
 }
 
 int wrapper::asInt(){
-    _assert_type(LazyType::NUMBER);
-    return static_cast<int>(_value.values.number);
+    return as<int>();
 }
 
 float wrapper::asFloat(){
-    _assert_type(LazyType::NUMBER);
-    return _value.values.number;
+    return as<float>();
 }
 
 bool wrapper::asBool(){
+    if (isNull()){
+        return false;
+    }
     _assert_type(LazyType::BOOL);
     return _value.values.boolean;
 }
@@ -72,12 +73,15 @@ bool wrapper::isNull(){
 }
 
 String wrapper::asString(){
+    if (isNull()){
+        return String();
+    }
     _assert_type(LazyType::STRING);
     return String(_value.values.string->str().c_str());
 }
 
 void wrapper::_assert_type(LazyType type){
-    if(_value.type != type){
+    if(_value.type != type ){
         this->~wrapper();
         throw invalid_type(type, _value.type);
     }
