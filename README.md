@@ -33,13 +33,12 @@ You can extract data using the `[]` operator. Use a string key to extract a valu
 
 ```cpp
 bool value = ex["key"].extract().asBool(); // true
-double version = ex["version"][1].extract().as<double>(); // 1.0
 ```
 
 You can also chain `[]` operators to extract nested data.
 
 ```cpp
-std::string value = ex["key"]["nested_key"].extract().asString();
+double version = ex["version"][1].extract().as<double>(); // 1.0
 ```
 
 ### Caching
@@ -53,13 +52,13 @@ lazyjson::extractor ex("{\"key\": {\"key2\": {\"key3\": 123, \"key3a\": true, \"
 
 ex["key"]["key2"].cache();
 
-int number = ex["key3"].extract().asInt(); // 123
-bool boolean = ex["key3a"].extract().asBool(); // true
-std::string text = ex["key3b"].extract().asString(); // "hello"
+int number = ex["key3"].extract().as<int>(); // 123
+bool boolean = ex["key3a"].extract().as<bool(); // true
+String text = ex["key3b"].extract().as<String>(); // "hello"
 
 // reset to inital state
 ex.reset();
-float other = ex["other_key"].extract().asFloat(); // 1.5
+float other = ex["other_key"].extract().as<float>(); // 1.5
 ```
 
 ### Error Handling
@@ -71,7 +70,7 @@ lazyjson::extractor ex("{\"key\": \"hello\", \"foo\": null}");
 
 // exception free, null propagation is supported
 ex["foo"][0]["key"].extract().isNull() // true
-ex["hello"][123].extract().isNull() // true
+ex["random_key"][123].extract().isNull() // true
 
 try {
     auto value = ex["key"].extract().as<int>(); // string cannot be converted to int
