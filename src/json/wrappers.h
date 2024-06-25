@@ -29,8 +29,12 @@ public:
     LazyList& list();
 
 
-    ///@brief Cast parsed value to type T
-    ///@throws `lazyjson::invalid_type` if the value cannot be casted to type T
+    /*
+        @brief Cast parsed value to type T
+        @tparam T Type to cast to
+        @throws `lazyjson::invalid_type` if the value cannot be casted to type T
+        @return Value casted to type T
+    */
     template<typename T>
     inline T as();
 
@@ -57,13 +61,13 @@ inline T wrapper::as()
     if (std::is_same<T, bool>::value){
         return asBool();
     }
-    else if (std::is_arithmetic<T>::value){
-        if (isNull()){
-            return 0;
-        }
-        _assert_type(LazyType::NUMBER);
+    if (std::is_floating_point<T>::value){
         return static_cast<T>(_value.values.number);
     }
+    if (!_value.repr.empty()){
+        return static_cast<T>(std::stoll(_value.repr));
+    }
+    return static_cast<T>(_value.values.number);
 }
 
 template<>

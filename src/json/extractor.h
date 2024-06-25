@@ -17,8 +17,75 @@ elements are going to be used.
 
 BEGIN_LAZY_JSON_NAMESPACE
 
-/// @brief Class used to extract values from a json string. Parsing is done only
-/// when the value is accessed (either by [] operator or by calling `extract()`).
+
+/*
+
+## Extractor
+
+The `extractor` class allows to easily parse a JSON string. 
+The parsing is done only when the value is accessed.
+
+### Example
+
+```cpp
+using namespace lazyjson;
+
+auto e = extractor(
+    "{\"key\": "
+        "{"
+            "\"subkey\": [\"hello\", 1.5, true],"
+            "\"subkey2\": 2,"
+            "\"subkey3\": 3"
+        "},"
+    "\"key2\": \"value\"}"
+);
+
+e["key"]["subkey"][1].extract().as<double>(); // 1.5
+e["key"]["subkey2"].extract().asInt(); // 2
+e["key2"].extract().asString(); // "value"
+e["random_key"].isNull(); // true
+e["random_key"].extract().as<String>(); // ""
+```
+
+In the example above, the extracting was quite inefficient.
+The parsing of the value at "key"->"subkey"->1 was done 3 times.
+You can omit the parsing by caching the value.
+
+However, caching the value can be done to optimize the parsing.
+
+Caching example:
+
+```cpp
+using namespace lazyjson;
+auto e = extractor(
+    "{\"key\": "
+        "{"
+            "\"subkey\": [\"hello\", 1.5, true],"
+            "\"subkey2\": 2,"
+            "\"subkey3\": 3"
+        "},"
+    "\"key2\": \"value\"}"
+);
+
+e["key"].cache(); // cache the object at "key"
+e["subkey"].extract().asInt(); // 1
+e["subkey2"].extract().asInt(); // 2
+e["subkey3"].extract().asInt(); // 3
+
+e["subkey"].cache(); // cache the list at "subkey"
+e[0].extract().as<String>(); // "hello"
+e[1].extract().as<float>(); // 1.5
+e[2].extract().as<bool>(); // true
+
+e.reset(); // reset the parsing json string to initial state (the whole json object)
+e["key2"].extract().asString(); // "value"
+```
+
+The memory footprint of the `extractor` class is very low,
+it doesn't allocate any memory on the heap, and doesn't copy the json string
+(except for the `cache()` method, which stores the cached json string).
+
+*/
 class extractor
 {
     char* _data;

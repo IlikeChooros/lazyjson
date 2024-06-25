@@ -41,6 +41,7 @@ typedef union {
 typedef struct {
     LazyValues values;
     LazyType type;
+    std::string repr;
 } LazyTypedValues;
 
 typedef struct {

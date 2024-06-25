@@ -20,6 +20,7 @@ BEGIN_LAZY_JSON_NAMESPACE
         }
     }
 
+
     std::string verboseLazyType(LazyType type){
         switch (type)
         {
@@ -60,7 +61,7 @@ BEGIN_LAZY_JSON_NAMESPACE
         and stores it in the object.
 
         So in this example, requesting key1 will parse "value1", and the whole value will be returned.
-        But requesting key3 will only lazily parse the object, and not the value of key4.
+        But requesting key3 will only lazily parse the object, and not the value of key3.
 
         For example, let the obj = ... (the json string above)
 
@@ -273,6 +274,7 @@ BEGIN_LAZY_JSON_NAMESPACE
             break;
         case TOKEN_TYPE::NUMBER:
             result.values.number = std::stof(token.value);
+            result.repr = token.value;
             result.type = LazyType::NUMBER;
             break;
         case TOKEN_TYPE::BOOLEAN:

@@ -2,34 +2,37 @@
  
 BEGIN_LAZY_JSON_NAMESPACE
 
-std::string verboseTokenType(TOKEN_TYPE type)
-{
-    switch (type)
+
+#if DEBUG_LAZY_JSON
+    std::string verboseTokenType(TOKEN_TYPE type)
     {
-    case TOKEN_TYPE::CURLY_OPEN:
-        return "CURLY_OPEN";
-    case TOKEN_TYPE::CURLY_CLOSE:
-        return "CURLY_CLOSE";
-    case TOKEN_TYPE::ARRAY_OPEN:
-        return "ARRAY_OPEN";
-    case TOKEN_TYPE::ARRAY_CLOSE:
-        return "ARRAY_CLOSE";
-    case TOKEN_TYPE::COMMA:
-        return "COMMA";
-    case TOKEN_TYPE::COLON:
-        return "COLON";
-    case TOKEN_TYPE::STRING:
-        return "STRING";
-    case TOKEN_TYPE::NUMBER:
-        return "NUMBER";
-    case TOKEN_TYPE::BOOLEAN:
-        return "BOOLEAN";
-    case TOKEN_TYPE::NULL_TYPE:
-        return "NULL_TYPE";
-    default:
-        return "UNKNOWN";
+        switch (type)
+        {
+        case TOKEN_TYPE::CURLY_OPEN:
+            return "CURLY_OPEN";
+        case TOKEN_TYPE::CURLY_CLOSE:
+            return "CURLY_CLOSE";
+        case TOKEN_TYPE::ARRAY_OPEN:
+            return "ARRAY_OPEN";
+        case TOKEN_TYPE::ARRAY_CLOSE:
+            return "ARRAY_CLOSE";
+        case TOKEN_TYPE::COMMA:
+            return "COMMA";
+        case TOKEN_TYPE::COLON:
+            return "COLON";
+        case TOKEN_TYPE::STRING:
+            return "STRING";
+        case TOKEN_TYPE::NUMBER:
+            return "NUMBER";
+        case TOKEN_TYPE::BOOLEAN:
+            return "BOOLEAN";
+        case TOKEN_TYPE::NULL_TYPE:
+            return "NULL_TYPE";
+        default:
+            return "UNKNOWN";
+        }
     }
-}
+#endif
 
 Tokenizer::Tokenizer(const char *data)
 {

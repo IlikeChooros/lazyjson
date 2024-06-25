@@ -24,6 +24,7 @@ wrapper& wrapper::operator=(const wrapper& other) {
     // copy the new values
     deepCopyLazyValue(values, type, _value.values);
     _value.type = type;
+    _value.repr = other._value.repr;
     return *this;
 }
 

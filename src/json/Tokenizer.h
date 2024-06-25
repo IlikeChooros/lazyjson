@@ -76,6 +76,9 @@ public:
     stream _stream;
 };
 
-std::string verboseTokenType(TOKEN_TYPE type);
+
+#if DEBUG_LAZY_JSON
+    std::string verboseTokenType(TOKEN_TYPE type);
+#endif
 
 END_LAZY_JSON_NAMESPACE

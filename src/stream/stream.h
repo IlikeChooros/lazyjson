@@ -27,7 +27,7 @@ class stream
     int _state;
 
 public:
-    stream(char *data = "")
+    stream(char *data = const_cast<char*>(""))
     {
         set(data);
     }
